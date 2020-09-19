@@ -20,11 +20,11 @@ public class Article {
     @Expose
     private String description;
 
-    @SerializedName("urlToImage")
+    @SerializedName("url")
     @Expose
     private String url;
 
-    @SerializedName("imageUrl")
+    @SerializedName("urlToImage")
     @Expose
     private String imageUrl;
 

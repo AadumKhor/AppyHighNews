@@ -123,7 +123,7 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 requestOptions.timeout(3000);
 
                 Glide.with(context)
-                        .load(model.getUrl())
+                        .load(model.getImageUrl())
                         .apply(requestOptions)
                         .listener(new RequestListener<Drawable>() {
                             @Override
@@ -142,7 +142,7 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         .into(newsViewHolder.image);
 
                 newsViewHolder.title.setText(model.getTitle());
-//                newsViewHolder.time.setText(" \u2022 " + Utils.DateFormat(model.getDate()));
+                newsViewHolder.time.setText(model.getDate());
                 newsViewHolder.source.setText(model.getSource().getName());
                 newsViewHolder.description.setText(model.getDescription());
                 newsViewHolder.author.setText(model.getAuthor());

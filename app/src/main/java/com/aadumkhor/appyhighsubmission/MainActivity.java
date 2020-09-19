@@ -11,13 +11,18 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aadumkhor.appyhighsubmission.api.ApiClient;
 import com.aadumkhor.appyhighsubmission.api.ApiInterface;
+import com.aadumkhor.appyhighsubmission.models.Article;
 import com.aadumkhor.appyhighsubmission.models.News;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
@@ -32,11 +37,26 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
+    // main recycler view
     private RecyclerView recyclerView;
+
+    // pull to refresh
+    private SwipeRefreshLayout swipeRefreshLayout;
+
+    // headlines for the news
+    private TextView topHeadlines;
+
+    // layout manager for our recycler view
     private RecyclerView.LayoutManager layoutManager;
+
+    // articles and add that fill up the recycler view
     private List<Object> articles = new ArrayList<>();
+
+    // adapter for the recycler view
     private NewsAdapter adapter;
+
+    // for logging in general
     private String TAG = MainActivity.class.getSimpleName();
 
     // The number of native ads to load and display.
@@ -53,16 +73,27 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // init mobile ads using the key stored in the resources
+        MobileAds.initialize(this,
+                getString(R.string.admob_app_id));
+
+        // init UI elements and recycler view
+        topHeadlines = findViewById(R.id.main_headline);
+        topHeadlines.setVisibility(View.INVISIBLE);
         recyclerView = findViewById(R.id.main_recycler);
         layoutManager = new LinearLayoutManager(MainActivity.this);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setNestedScrollingEnabled(false);
+        swipeRefreshLayout = findViewById(R.id.main_swipe_refresh);
 
+        swipeRefreshLayout.setOnRefreshListener(MainActivity.this);
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorAccent);
+
+        // invoke method to populate list
         loadJson();
-        loadNativeAds();
-        MobileAds.initialize(this,
-                getString(R.string.admob_app_id));
+//        loadNativeAds();
+
 
 //        if (savedInstanceState == null) {
 //            // Create new fragment to display a progress spinner while the data set for the
@@ -82,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void loadJson() {
+        swipeRefreshLayout.setRefreshing(true);
         ApiInterface apiInterface = ApiClient.getApiClient().create(ApiInterface.class);
         String country = Utils.getCountry();
         Call<News> call;
@@ -96,18 +128,22 @@ public class MainActivity extends AppCompatActivity {
                         articles.clear();
                     }
                     articles.addAll(response.body().getArticles());
-//                    adapter = new NewsAdapter(articles, MainActivity.this);
-//                    recyclerView.setAdapter(adapter);
-//                    adapter.notifyDataSetChanged();
+                    adapter = new NewsAdapter(articles, MainActivity.this);
+                    recyclerView.setAdapter(adapter);
+                    adapter.notifyDataSetChanged();
 
+                    initListener();
                 } else {
                     Toast.makeText(MainActivity.this, "No Results!", Toast.LENGTH_SHORT).show();
                 }
+                swipeRefreshLayout.setRefreshing(false);
+                topHeadlines.setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onFailure(Call<News> call, Throwable t) {
-
+                swipeRefreshLayout.setRefreshing(false);
+                topHeadlines.setVisibility(View.GONE);
             }
         });
     }
@@ -175,5 +211,24 @@ public class MainActivity extends AppCompatActivity {
 
     public List<Object> getRecyclerViewItems() {
         return articles;
+    }
+
+    @Override
+    public void onRefresh() {
+        loadJson();
+    }
+
+    private void initListener() {
+        adapter.setOnItemClickListener(new NewsAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                Intent intent = new Intent(MainActivity.this, NewsDetails.class);
+
+                Article article = (Article) articles.get(position);
+                intent.putExtra("url", article.getUrl());
+
+                startActivity(intent);
+            }
+        });
     }
 }
