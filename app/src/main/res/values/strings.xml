@@ -1,4 +1,13 @@
 <resources>
     <string name="app_name">AppyHighSubmission</string>
     <string name="top_headlines">Top Headlines</string>
+    <string name="item_image">Item Image</string>
+    <string name="bottom_shadow">Bottom_Shadow</string>
+    <string name="author">Author</string>
+    <string name="article_data_image">article_data_image</string>
+    <string name="_1st_january_2020">1st January 2020</string>
+    <string name="headlines">Headlines</string>
+    <string name="description">Description</string>
+    <string name="source">Source</string>
+    <string name="time">time</string>
 </resources>

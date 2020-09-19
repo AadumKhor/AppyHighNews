@@ -30,7 +30,7 @@ public class Article {
 
     @SerializedName("date")
     @Expose
-    private String data;
+    private String date;
 
     public Source getSource() {
         return source;
@@ -80,11 +80,11 @@ public class Article {
         this.imageUrl = imageUrl;
     }
 
-    public String getData() {
-        return data;
+    public String getDate() {
+        return date;
     }
 
-    public void setData(String data) {
-        this.data = data;
+    public void setDate(String data) {
+        this.date = data;
     }
 }
