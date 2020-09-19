@@ -6,8 +6,10 @@ import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -23,13 +25,36 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
+import com.google.android.gms.ads.formats.NativeAd;
+import com.google.android.gms.ads.formats.UnifiedNativeAd;
+import com.google.android.gms.ads.formats.UnifiedNativeAdView;
 
 import java.util.List;
 
-public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder> {
-    private List<Article> articles;
+public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private List<Object> articles;
     private Context context;
     private OnItemClickListener onItemClickListener;
+
+    // A menu item view type.
+    private static final int MENU_ITEM_VIEW_TYPE = 0;
+
+    // The unified native ad view type.
+    private static final int UNIFIED_NATIVE_AD_VIEW_TYPE = 1;
+
+    public NewsAdapter(List<Object> articleList, Context context1) {
+        this.articles = articleList;
+        this.context = context1;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        Object recyclerViewItems = articles.get(position);
+        if (recyclerViewItems instanceof UnifiedNativeAd) {
+            return UNIFIED_NATIVE_AD_VIEW_TYPE;
+        }
+        return MENU_ITEM_VIEW_TYPE;
+    }
 
     public static class NewsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView title, author, date, time, source, description;
@@ -61,54 +86,125 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
 
     @NonNull
     @Override
-    public NewsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item, parent, false);
-        return new NewsViewHolder(view, onItemClickListener);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        switch (viewType) {
+            case UNIFIED_NATIVE_AD_VIEW_TYPE:
+                View unifiedNativeAdLayout = LayoutInflater.from(context)
+                        .inflate(R.layout.ad_unified, parent, false);
+                return new UnifiedNativeAdViewHolder(unifiedNativeAdLayout);
+            case MENU_ITEM_VIEW_TYPE:
+                // go to default;
+            default:
+                View view = LayoutInflater.from(context).inflate(R.layout.item, parent, false);
+                return new NewsViewHolder(view, onItemClickListener);
+        }
+
     }
 
     @SuppressLint("SetTextI18n")
     @Override
-    public void onBindViewHolder(@NonNull final NewsViewHolder holder, int position) {
-        Article model = articles.get(position);
+    public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder holder, int position) {
+        int viewType = getItemViewType(position);
 
-        RequestOptions requestOptions = new RequestOptions();
-        requestOptions.placeholder(Utils.getRandomDrawableColor());
-        requestOptions.error(Utils.getRandomDrawableColor());
-        requestOptions.diskCacheStrategy(DiskCacheStrategy.ALL);
-        requestOptions.centerCrop();
-        requestOptions.timeout(3000);
+        switch (viewType) {
+            case UNIFIED_NATIVE_AD_VIEW_TYPE:
+                UnifiedNativeAd nativeAd = (UnifiedNativeAd) articles.get(position);
+                populateNativeAdView(nativeAd, ((UnifiedNativeAdViewHolder) holder).getAdView());
+                break;
+            case MENU_ITEM_VIEW_TYPE:
+                final NewsViewHolder newsViewHolder = (NewsViewHolder) holder;
+                Article model = (Article) articles.get(position);
 
-        Glide.with(context)
-                .load(model.getUrl())
-                .apply(requestOptions)
-                .listener(new RequestListener<Drawable>() {
-                    @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                        holder.progressBar.setVisibility(View.GONE);
-                        return false;
-                    }
+                RequestOptions requestOptions = new RequestOptions();
+                requestOptions.placeholder(Utils.getRandomDrawableColor());
+                requestOptions.error(Utils.getRandomDrawableColor());
+                requestOptions.diskCacheStrategy(DiskCacheStrategy.ALL);
+                requestOptions.centerCrop();
+                requestOptions.timeout(3000);
 
-                    @Override
-                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                        holder.progressBar.setVisibility(View.GONE);
-                        return false;
-                    }
-                })
-                .transition(DrawableTransitionOptions.withCrossFade())
-                .into(holder.image);
+                Glide.with(context)
+                        .load(model.getUrl())
+                        .apply(requestOptions)
+                        .listener(new RequestListener<Drawable>() {
+                            @Override
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                newsViewHolder.progressBar.setVisibility(View.GONE);
+                                return false;
+                            }
 
-        holder.title.setText(model.getTitle());
-        holder.time.setText(" \u2022 "+ Utils.DateToTimeFormat(model.getDate()));
-        holder.source.setText(model.getSource().getName());
-        holder.description.setText(model.getDescription());
-        holder.author.setText(model.getAuthor());
-        holder.date.setText(model.getDate());
+                            @Override
+                            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                newsViewHolder.progressBar.setVisibility(View.GONE);
+                                return false;
+                            }
+                        })
+                        .transition(DrawableTransitionOptions.withCrossFade())
+                        .into(newsViewHolder.image);
 
+                newsViewHolder.title.setText(model.getTitle());
+//                newsViewHolder.time.setText(" \u2022 " + Utils.DateFormat(model.getDate()));
+                newsViewHolder.source.setText(model.getSource().getName());
+                newsViewHolder.description.setText(model.getDescription());
+                newsViewHolder.author.setText(model.getAuthor());
+                newsViewHolder.date.setText(model.getDate());
+                break;
+        }
     }
 
     @Override
     public int getItemCount() {
         return articles.size();
+    }
+
+    private void populateNativeAdView(UnifiedNativeAd nativeAd,
+                                      UnifiedNativeAdView adView) {
+        // Some assets are guaranteed to be in every UnifiedNativeAd.
+        ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
+        ((TextView) adView.getBodyView()).setText(nativeAd.getBody());
+        ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
+
+        // These assets aren't guaranteed to be in every UnifiedNativeAd, so it's important to
+        // check before trying to display them.
+        NativeAd.Image icon = nativeAd.getIcon();
+
+        if (icon == null) {
+            adView.getIconView().setVisibility(View.INVISIBLE);
+        } else {
+            ((ImageView) adView.getIconView()).setImageDrawable(icon.getDrawable());
+            adView.getIconView().setVisibility(View.VISIBLE);
+        }
+
+        if (nativeAd.getPrice() == null) {
+            adView.getPriceView().setVisibility(View.INVISIBLE);
+        } else {
+            adView.getPriceView().setVisibility(View.VISIBLE);
+            ((TextView) adView.getPriceView()).setText(nativeAd.getPrice());
+        }
+
+        if (nativeAd.getStore() == null) {
+            adView.getStoreView().setVisibility(View.INVISIBLE);
+        } else {
+            adView.getStoreView().setVisibility(View.VISIBLE);
+            ((TextView) adView.getStoreView()).setText(nativeAd.getStore());
+        }
+
+        if (nativeAd.getStarRating() == null) {
+            adView.getStarRatingView().setVisibility(View.INVISIBLE);
+        } else {
+            ((RatingBar) adView.getStarRatingView())
+                    .setRating(nativeAd.getStarRating().floatValue());
+            adView.getStarRatingView().setVisibility(View.VISIBLE);
+        }
+
+        if (nativeAd.getAdvertiser() == null) {
+            adView.getAdvertiserView().setVisibility(View.INVISIBLE);
+        } else {
+            ((TextView) adView.getAdvertiserView()).setText(nativeAd.getAdvertiser());
+            adView.getAdvertiserView().setVisibility(View.VISIBLE);
+        }
+
+        // Assign native ad object to the native view.
+        adView.setNativeAd(nativeAd);
     }
 
     public void setOnItemClickListener(OnItemClickListener onItemClickListener) {

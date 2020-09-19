@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "138228855566",
+    "firebase_url": "https://appyhighsubmission.firebaseio.com",
+    "project_id": "appyhighsubmission",
+    "storage_bucket": "appyhighsubmission.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:138228855566:android:1f9d185a10042b086f1d5f",
+        "android_client_info": {
+          "package_name": "com.aadumkhor.appyhighsubmission"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "138228855566-ca9d5p0fot3cch8fkijh6p8kvke8jo1l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACxJyENpzqGKepXwLQMYFzbklZcpUiYE4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "138228855566-ca9d5p0fot3cch8fkijh6p8kvke8jo1l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

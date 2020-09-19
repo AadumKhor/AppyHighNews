@@ -1,7 +1,9 @@
 package com.aadumkhor.appyhighsubmission;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.telephony.TelephonyManager;
 
 import org.ocpsoft.prettytime.PrettyTime;
 
@@ -44,15 +46,16 @@ public class Utils {
         return isTime;
     }
 
-    public static String DateFormat(String oldstringDate) {
+    public static String DateFormat(String oldStringDate) {
         String newDate;
         SimpleDateFormat dateFormat = new SimpleDateFormat("E, d MMM yyyy", new Locale(getCountry()));
         try {
-            Date date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(oldstringDate);
+            Date date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(oldStringDate);
+            assert date != null;
             newDate = dateFormat.format(date);
         } catch (ParseException e) {
             e.printStackTrace();
-            newDate = oldstringDate;
+            newDate = oldStringDate;
         }
 
         return newDate;
@@ -62,5 +65,11 @@ public class Utils {
         Locale locale = Locale.getDefault();
         String country = String.valueOf(locale.getCountry());
         return country.toLowerCase();
+    }
+
+    public String getTelephonyCountry(Context context) {
+        TelephonyManager telephoneManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        assert telephoneManager != null;
+        return telephoneManager.getNetworkCountryIso();
     }
 }
