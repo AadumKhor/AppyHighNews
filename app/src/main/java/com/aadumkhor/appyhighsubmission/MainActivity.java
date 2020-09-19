@@ -1,4 +1,9 @@
 package com.aadumkhor.appyhighsubmission;
+//**
+// https://github.com/firebase/firebase-android-sdk/issues/1662
+// The issue with using ad mob is similar to mentioned on this link, refer
+// to it before using it in this app.
+// **//
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -9,18 +14,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Adapter;
 import android.widget.Toast;
 
 import com.aadumkhor.appyhighsubmission.api.ApiClient;
 import com.aadumkhor.appyhighsubmission.api.ApiInterface;
-import com.aadumkhor.appyhighsubmission.models.Article;
 import com.aadumkhor.appyhighsubmission.models.News;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.formats.UnifiedNativeAd;
 
 import java.util.ArrayList;
@@ -56,27 +58,27 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setNestedScrollingEnabled(false);
-//
-//        loadJson();
-//        loadNativeAds();
+
+        loadJson();
+        loadNativeAds();
         MobileAds.initialize(this,
                 getString(R.string.admob_app_id));
 
-        if (savedInstanceState == null) {
-            // Create new fragment to display a progress spinner while the data set for the
-            // RecyclerView is populated.
-            Fragment loadingScreenFragment = new LoadingScreenFragment();
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.add(R.id.main_layout, loadingScreenFragment);
-
-            // Commit the transaction.
-            transaction.commit();
-
-            // Update the RecyclerView item's list with menu items.
-            loadJson();
-            // Update the RecyclerView item's list with native ads.
-            loadNativeAds();
-        }
+//        if (savedInstanceState == null) {
+//            // Create new fragment to display a progress spinner while the data set for the
+//            // RecyclerView is populated.
+//            Fragment loadingScreenFragment = new LoadingScreenFragment();
+//            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+//            transaction.add(R.id.fragment_container, loadingScreenFragment);
+//
+//            // Commit the transaction.
+//            transaction.commit();
+//
+//            // Update the RecyclerView item's list with menu items.
+//            loadJson();
+//            // Update the RecyclerView item's list with native ads.
+////            loadNativeAds();
+//        }
     }
 
     public void loadJson() {
@@ -94,9 +96,9 @@ public class MainActivity extends AppCompatActivity {
                         articles.clear();
                     }
                     articles.addAll(response.body().getArticles());
-                    adapter = new NewsAdapter(articles, MainActivity.this);
-                    recyclerView.setAdapter(adapter);
-                    adapter.notifyDataSetChanged();
+//                    adapter = new NewsAdapter(articles, MainActivity.this);
+//                    recyclerView.setAdapter(adapter);
+//                    adapter.notifyDataSetChanged();
 
                 } else {
                     Toast.makeText(MainActivity.this, "No Results!", Toast.LENGTH_SHORT).show();
@@ -121,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
             articles.add(index, ad);
             index = index + offset;
         }
+//        loadMenu();
     }
 
     private void loadNativeAds() {
@@ -134,6 +137,7 @@ public class MainActivity extends AppCompatActivity {
                         mNativeAds.add(unifiedNativeAd);
                         if (!adLoader.isLoading()) {
                             insertAdsInMenuItems();
+                            loadMenu();
                         }
                     }
                 }).withAdListener(
@@ -146,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
                                 + " load another.");
                         if (!adLoader.isLoading()) {
                             insertAdsInMenuItems();
+                            loadMenu();
                         }
                     }
                 }).build();
@@ -154,17 +159,21 @@ public class MainActivity extends AppCompatActivity {
         adLoader.loadAds(new AdRequest.Builder().build(), NUMBER_OF_ADS);
     }
 
-//    private void loadMenu() {
-//        // Create new fragment and transaction
-//        Fragment newFragment = new RecyclerViewFragment();
-//        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-//
-//        // Replace whatever is in the fragment_container view with this fragment,
-//        // and add the transaction to the back stack
-//        transaction.replace(R.id.fragment_container, newFragment);
-//        transaction.addToBackStack(null);
-//
-//        // Commit the transaction
-//        transaction.commit();
-//    }
+    private void loadMenu() {
+        // Create new fragment and transaction
+        Fragment newFragment = new RecyclerViewFragment();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+        // Replace whatever is in the fragment_container view with this fragment,
+        // and add the transaction to the back stack
+        transaction.replace(R.id.fragment_container, newFragment);
+        transaction.addToBackStack(null);
+
+        // Commit the transaction
+        transaction.commit();
+    }
+
+    public List<Object> getRecyclerViewItems() {
+        return articles;
+    }
 }

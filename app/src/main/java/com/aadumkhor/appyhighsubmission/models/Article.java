@@ -20,7 +20,7 @@ public class Article {
     @Expose
     private String description;
 
-    @SerializedName("url")
+    @SerializedName("urlToImage")
     @Expose
     private String url;
 
