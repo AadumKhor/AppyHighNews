@@ -142,7 +142,7 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         .into(newsViewHolder.image);
 
                 newsViewHolder.title.setText(model.getTitle());
-                newsViewHolder.time.setText(model.getDate());
+                newsViewHolder.time.setText(Utils.DateFormat(model.getDate()));
                 newsViewHolder.source.setText(model.getSource().getName());
                 newsViewHolder.description.setText(model.getDescription());
                 newsViewHolder.author.setText(model.getAuthor());

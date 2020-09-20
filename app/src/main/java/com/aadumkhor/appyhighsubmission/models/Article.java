@@ -28,7 +28,7 @@ public class Article {
     @Expose
     private String imageUrl;
 
-    @SerializedName("date")
+    @SerializedName("publishedAt")
     @Expose
     private String date;
 

@@ -13,10 +13,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.RelativeLayout;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,6 +53,12 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     // headlines for the news
     private TextView topHeadlines;
+
+    // reference to the error layout
+    private RelativeLayout errorLayout;
+
+    // button on error layout
+    private Button retryButton;
 
     // layout manager for our recycler view
     private RecyclerView.LayoutManager layoutManager;
@@ -86,38 +99,30 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setNestedScrollingEnabled(false);
         swipeRefreshLayout = findViewById(R.id.main_swipe_refresh);
+        retryButton = findViewById(R.id.retry_button);
+        errorLayout = findViewById(R.id.error_layout);
 
         swipeRefreshLayout.setOnRefreshListener(MainActivity.this);
         swipeRefreshLayout.setColorSchemeResources(R.color.colorAccent);
 
         // invoke method to populate list
-        loadJson();
+        loadJson("");
 //        loadNativeAds();
-
-
-//        if (savedInstanceState == null) {
-//            // Create new fragment to display a progress spinner while the data set for the
-//            // RecyclerView is populated.
-//            Fragment loadingScreenFragment = new LoadingScreenFragment();
-//            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-//            transaction.add(R.id.fragment_container, loadingScreenFragment);
-//
-//            // Commit the transaction.
-//            transaction.commit();
-//
-//            // Update the RecyclerView item's list with menu items.
-//            loadJson();
-//            // Update the RecyclerView item's list with native ads.
-////            loadNativeAds();
-//        }
     }
 
-    public void loadJson() {
+    public void loadJson(final String keyword) {
+        errorLayout.setVisibility(View.GONE);
         swipeRefreshLayout.setRefreshing(true);
         ApiInterface apiInterface = ApiClient.getApiClient().create(ApiInterface.class);
-        String country = Utils.getCountry();
+        String country = Utils.getTelephonyCountry(MainActivity.this);
+        String language = Utils.getLanguage();
+        Log.d(TAG, country);
         Call<News> call;
-        call = apiInterface.getNews(country, ApiClient.NEWS_API_KEY);
+        if (keyword.length() > 0) {
+            call = apiInterface.getNewsSearch(keyword, language, "publishedAt", ApiClient.NEWS_API_KEY);
+        } else {
+            call = apiInterface.getNews(country, ApiClient.NEWS_API_KEY);
+        }
 
         call.enqueue(new Callback<News>() {
             @Override
@@ -135,6 +140,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                     initListener();
                 } else {
                     Toast.makeText(MainActivity.this, "No Results!", Toast.LENGTH_SHORT).show();
+                    //TODO: check with error code and accordingly display messages
                 }
                 swipeRefreshLayout.setRefreshing(false);
                 topHeadlines.setVisibility(View.VISIBLE);
@@ -144,22 +150,25 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             public void onFailure(Call<News> call, Throwable t) {
                 swipeRefreshLayout.setRefreshing(false);
                 topHeadlines.setVisibility(View.GONE);
+                showErrorLayout();
             }
         });
     }
 
-    private void insertAdsInMenuItems() {
+    private void insertToArticles() {
         if (mNativeAds.size() <= 0) {
             return;
         }
-
         int offset = (articles.size() / mNativeAds.size()) + 1;
         int index = 0;
         for (UnifiedNativeAd ad : mNativeAds) {
             articles.add(index, ad);
             index = index + offset;
         }
-//        loadMenu();
+//        adapter = new NewsAdapter(articles, MainActivity.this);
+//        recyclerView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+        swipeRefreshLayout.setRefreshing(false);
     }
 
     private void loadNativeAds() {
@@ -172,8 +181,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                         // and if so, insert the ads into the list.
                         mNativeAds.add(unifiedNativeAd);
                         if (!adLoader.isLoading()) {
-                            insertAdsInMenuItems();
-                            loadMenu();
+                            insertToArticles();
+//                            loadMenu();
                         }
                     }
                 }).withAdListener(
@@ -185,8 +194,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                         Log.e("MainActivity", "The previous native ad failed to load. Attempting to"
                                 + " load another.");
                         if (!adLoader.isLoading()) {
-                            insertAdsInMenuItems();
-                            loadMenu();
+                            insertToArticles();
+//                            loadMenu();
                         }
                     }
                 }).build();
@@ -215,7 +224,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     @Override
     public void onRefresh() {
-        loadJson();
+        loadJson("");
     }
 
     private void initListener() {
@@ -230,5 +239,48 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 startActivity(intent);
             }
         });
+    }
+
+    private void showErrorLayout() {
+        if (errorLayout.getVisibility() == View.GONE) {
+            errorLayout.setVisibility(View.VISIBLE);
+        }
+
+        retryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onRefresh();
+            }
+        });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu_main, menu);
+        SearchManager searchManager = (SearchManager) getSystemService(SEARCH_SERVICE);
+        final SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setQueryHint("Search Latest News for a keyword");
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                if (query.length() > 2) {
+                    loadJson(query);
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                loadJson(newText);
+                return false;
+            }
+        });
+        searchItem.getIcon().setVisible(false, false);
+
+        return super.onCreateOptionsMenu(menu);
     }
 }

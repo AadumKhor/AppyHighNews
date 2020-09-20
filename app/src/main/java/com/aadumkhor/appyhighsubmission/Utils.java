@@ -5,8 +5,6 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.telephony.TelephonyManager;
 
-import org.ocpsoft.prettytime.PrettyTime;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -31,19 +29,9 @@ public class Utils {
         return vibrantLightColorList[idx];
     }
 
-    public static String DateToTimeFormat(String oldstringDate) {
-        PrettyTime p = new PrettyTime(new Locale(getCountry()));
-        String isTime = null;
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'",
-                    Locale.ENGLISH);
-            Date date = sdf.parse(oldstringDate);
-            isTime = p.format(date);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-        return isTime;
+    public static String getLanguage() {
+        Locale locale = Locale.getDefault();
+        return String.valueOf(locale.getLanguage());
     }
 
     public static String DateFormat(String oldStringDate) {
@@ -63,11 +51,11 @@ public class Utils {
 
     public static String getCountry() {
         Locale locale = Locale.getDefault();
-        String country = String.valueOf(locale.getCountry());
+        String country = locale.getCountry();
         return country.toLowerCase();
     }
 
-    public String getTelephonyCountry(Context context) {
+    public static String getTelephonyCountry(Context context) {
         TelephonyManager telephoneManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         assert telephoneManager != null;
         return telephoneManager.getNetworkCountryIso();
