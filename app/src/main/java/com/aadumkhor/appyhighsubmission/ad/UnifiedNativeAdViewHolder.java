@@ -1,7 +1,9 @@
-package com.aadumkhor.appyhighsubmission;
+package com.aadumkhor.appyhighsubmission.ad;
 
 import android.view.View;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.aadumkhor.appyhighsubmission.R;
 import com.google.android.gms.ads.formats.MediaView;
 import com.google.android.gms.ads.formats.UnifiedNativeAdView;
 

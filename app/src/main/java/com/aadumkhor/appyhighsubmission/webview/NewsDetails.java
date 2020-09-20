@@ -1,4 +1,4 @@
-package com.aadumkhor.appyhighsubmission;
+package com.aadumkhor.appyhighsubmission.webview;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import com.aadumkhor.appyhighsubmission.R;
 
 public class NewsDetails extends AppCompatActivity {
 

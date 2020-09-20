@@ -3,7 +3,6 @@ package com.aadumkhor.appyhighsubmission;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.aadumkhor.appyhighsubmission.ad.UnifiedNativeAdViewHolder;
 import com.aadumkhor.appyhighsubmission.models.Article;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;

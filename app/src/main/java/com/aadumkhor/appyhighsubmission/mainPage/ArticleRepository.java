@@ -1,4 +1,4 @@
-package com.aadumkhor.appyhighsubmission;
+package com.aadumkhor.appyhighsubmission.mainPage;
 
 import android.app.Application;
 

@@ -1,4 +1,4 @@
-package com.aadumkhor.appyhighsubmission;
+package com.aadumkhor.appyhighsubmission.mainPage;
 //**
 // https://github.com/firebase/firebase-android-sdk/issues/1662
 // The issue with using ad mob is similar to mentioned on this link, refer
@@ -16,7 +16,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.app.AlertDialog;
 import android.app.SearchManager;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,21 +29,24 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.aadumkhor.appyhighsubmission.NewsAdapter;
+import com.aadumkhor.appyhighsubmission.R;
+import com.aadumkhor.appyhighsubmission.RecyclerViewFragment;
+import com.aadumkhor.appyhighsubmission.Utils;
 import com.aadumkhor.appyhighsubmission.api.ApiClient;
 import com.aadumkhor.appyhighsubmission.api.ApiInterface;
 import com.aadumkhor.appyhighsubmission.models.Article;
 import com.aadumkhor.appyhighsubmission.models.News;
 import com.aadumkhor.appyhighsubmission.room.ArticlesDatabase;
+import com.aadumkhor.appyhighsubmission.webview.NewsDetails;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.formats.UnifiedNativeAd;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
