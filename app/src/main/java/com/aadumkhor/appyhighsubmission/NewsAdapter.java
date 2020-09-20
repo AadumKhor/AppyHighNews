@@ -35,6 +35,7 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private List<Object> articles;
     private Context context;
     private OnItemClickListener onItemClickListener;
+    private OnLongClickListener onLongClickListener;
 
     // A menu item view type.
     private static final int MENU_ITEM_VIEW_TYPE = 0;
@@ -56,15 +57,17 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return MENU_ITEM_VIEW_TYPE;
     }
 
-    public static class NewsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public static class NewsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         TextView title, author, date, time, source, description;
         ImageView image;
         ProgressBar progressBar;
         OnItemClickListener onItemClickListener;
+        OnLongClickListener onLongClickListener;
 
-        public NewsViewHolder(@NonNull View itemView, OnItemClickListener onItemClickListener) {
+        public NewsViewHolder(@NonNull View itemView, OnItemClickListener onItemClickListener, OnLongClickListener onLongItemClick) {
             super(itemView);
             itemView.setOnClickListener(this);
+            itemView.setOnLongClickListener(this);
 
             title = itemView.findViewById(R.id.news_title);
             description = itemView.findViewById(R.id.description);
@@ -76,11 +79,17 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             progressBar = itemView.findViewById(R.id.image_progress);
 
             this.onItemClickListener = onItemClickListener;
+            this.onLongClickListener = onLongItemClick;
         }
 
         @Override
         public void onClick(View v) {
             onItemClickListener.onItemClick(v, getAdapterPosition());
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            return onLongClickListener.onLongClick(v, getAdapterPosition());
         }
     }
 
@@ -96,7 +105,7 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 // go to default;
             default:
                 View view = LayoutInflater.from(context).inflate(R.layout.item, parent, false);
-                return new NewsViewHolder(view, onItemClickListener);
+                return new NewsViewHolder(view, onItemClickListener, onLongClickListener);
         }
 
     }
@@ -213,5 +222,13 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public interface OnItemClickListener {
         void onItemClick(View view, int position);
+    }
+
+    public interface OnLongClickListener {
+        boolean onLongClick(View view, int position);
+    }
+
+    public void setOnLongItemClick(OnLongClickListener onLongClickListener) {
+        this.onLongClickListener = onLongClickListener;
     }
 }

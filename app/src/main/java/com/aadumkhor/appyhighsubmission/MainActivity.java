@@ -8,12 +8,15 @@ package com.aadumkhor.appyhighsubmission;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.app.AlertDialog;
 import android.app.SearchManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,14 +34,17 @@ import com.aadumkhor.appyhighsubmission.api.ApiClient;
 import com.aadumkhor.appyhighsubmission.api.ApiInterface;
 import com.aadumkhor.appyhighsubmission.models.Article;
 import com.aadumkhor.appyhighsubmission.models.News;
+import com.aadumkhor.appyhighsubmission.room.ArticlesDatabase;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.formats.UnifiedNativeAd;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -81,10 +87,19 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     // List of native ads that have been successfully loaded.
     private List<UnifiedNativeAd> mNativeAds = new ArrayList<>();
 
+    // room database instance
+    private ArticlesDatabase articlesDatabase;
+
+    // view model reference
+    private ArticlesViewModel articlesViewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        articlesDatabase = ArticlesDatabase.getInstance(MainActivity.this);
+        articlesViewModel = new ViewModelProvider(this).get(ArticlesViewModel.class);
 
         // init mobile ads using the key stored in the resources
         MobileAds.initialize(this,
@@ -237,6 +252,43 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 intent.putExtra("url", article.getUrl());
 
                 startActivity(intent);
+            }
+        });
+
+        adapter.setOnLongItemClick(new NewsAdapter.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view, final int position) {
+                final CharSequence[] items = {"Yes", "No"};
+
+                final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("Do you want to save this article?");
+                builder.setItems(items, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int index) {
+                        if (index == 0) {
+                            try {
+                                articlesViewModel.insert((Article) articles.get(position));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                Log.e(TAG, e.toString());
+                            }
+
+//                            AppExecutors.getInstance().diskIO().execute(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    articlesDatabase.articleDao().insertArticle((Article) articles.get(position));
+//
+//                                }
+//                            });
+//                            Log.d(TAG, String.valueOf(articlesDatabase
+//                                    .articleDao().getSavedArticles().getValue().size()));
+                        } else {
+                            dialog.cancel();
+                        }
+                    }
+                });
+                builder.show();
+                return true;
             }
         });
     }
