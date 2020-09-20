@@ -15,7 +15,7 @@ public class UnifiedNativeAdViewHolder extends RecyclerView.ViewHolder {
         return adView;
     }
 
-    UnifiedNativeAdViewHolder(View view) {
+    public UnifiedNativeAdViewHolder(View view) {
         super(view);
         adView = (UnifiedNativeAdView) view.findViewById(R.id.ad_view);
 

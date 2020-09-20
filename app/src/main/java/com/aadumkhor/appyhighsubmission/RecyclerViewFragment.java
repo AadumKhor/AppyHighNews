@@ -9,8 +9,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.aadumkhor.appyhighsubmission.mainPage.MainActivity;
-
 import java.util.List;
 
 public class RecyclerViewFragment extends Fragment {

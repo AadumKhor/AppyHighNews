@@ -1,10 +1,11 @@
-package com.aadumkhor.appyhighsubmission.mainPage;
+package com.aadumkhor.appyhighsubmission;
 //**
 // https://github.com/firebase/firebase-android-sdk/issues/1662
 // The issue with using ad mob is similar to mentioned on this link, refer
 // to it before using it in this app.
 // **//
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -29,15 +30,10 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.aadumkhor.appyhighsubmission.NewsAdapter;
-import com.aadumkhor.appyhighsubmission.R;
-import com.aadumkhor.appyhighsubmission.RecyclerViewFragment;
-import com.aadumkhor.appyhighsubmission.Utils;
 import com.aadumkhor.appyhighsubmission.api.ApiClient;
 import com.aadumkhor.appyhighsubmission.api.ApiInterface;
 import com.aadumkhor.appyhighsubmission.models.Article;
 import com.aadumkhor.appyhighsubmission.models.News;
-import com.aadumkhor.appyhighsubmission.room.ArticlesDatabase;
 import com.aadumkhor.appyhighsubmission.webview.NewsDetails;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
@@ -47,6 +43,7 @@ import com.google.android.gms.ads.formats.UnifiedNativeAd;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -89,18 +86,21 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     // List of native ads that have been successfully loaded.
     private List<UnifiedNativeAd> mNativeAds = new ArrayList<>();
 
-    // room database instance
-    private ArticlesDatabase articlesDatabase;
+//    // room database instance
+//    private ArticlesDatabase articlesDatabase;
 
     // view model reference
     private ArticlesViewModel articlesViewModel;
+
+    private boolean showSaved = false;
+    private boolean adMobOn = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        articlesDatabase = ArticlesDatabase.getInstance(MainActivity.this);
+//        articlesDatabase = ArticlesDatabase.getInstance(MainActivity.this);
         articlesViewModel = new ViewModelProvider(this).get(ArticlesViewModel.class);
 
         // init mobile ads using the key stored in the resources
@@ -263,16 +263,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                         e.printStackTrace();
                         Log.e(TAG, e.toString());
                     }
-
-//                            AppExecutors.getInstance().diskIO().execute(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    articlesDatabase.articleDao().insertArticle((Article) articles.get(position));
-//
-//                                }
-//                            });
-//                            Log.d(TAG, String.valueOf(articlesDatabase
-//                                    .articleDao().getSavedArticles().getValue().size()));
                 } else {
                     dialog.cancel();
                 }
@@ -318,6 +308,52 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         });
         searchItem.getIcon().setVisible(false, false);
 
+
         return super.onCreateOptionsMenu(menu);
     }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case (R.id.action_saved):
+                saved();
+                return true;
+            case (R.id.action_setting):
+                turnOnAdMob();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void turnOnAdMob() {
+        adMobOn = !adMobOn;
+        if(adMobOn){
+            loadNativeAds();
+        }else{
+            articles.clear();
+            adapter.notifyDataSetChanged();
+            loadJson("");
+        }
+    }
+
+    private void saved() {
+        if (!showSaved) {
+            articles.clear();
+            adapter.notifyDataSetChanged();
+            try {
+                articles.addAll(Objects.requireNonNull(articlesViewModel.getArticles().getValue()));
+                adapter.notifyDataSetChanged();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(TAG, e.toString());
+            }
+        }else{
+            articles.clear();
+            adapter.notifyDataSetChanged();
+            onRefresh();
+        }
+    }
+
+
 }

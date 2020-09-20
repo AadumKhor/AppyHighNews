@@ -1,4 +1,4 @@
-package com.aadumkhor.appyhighsubmission.mainPage;
+package com.aadumkhor.appyhighsubmission;
 
 import android.app.Application;
 
@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.aadumkhor.appyhighsubmission.mainPage.ArticleRepository;
+import com.aadumkhor.appyhighsubmission.ArticleRepository;
 import com.aadumkhor.appyhighsubmission.models.Article;
 
 import java.util.List;

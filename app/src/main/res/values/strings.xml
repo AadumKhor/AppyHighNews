@@ -20,4 +20,6 @@
     <string name="retry">Retry</string>
     <string name="search">Search</string>
     <string name="settings">Settings</string>
+    <string name="saved_articles">Saved Articles</string>
+    <string name="saved">Saved</string>
 </resources>
