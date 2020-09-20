@@ -3,6 +3,7 @@ package com.aadumkhor.appyhighsubmission;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -155,7 +156,7 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 newsViewHolder.source.setText(model.getSource().getName());
                 newsViewHolder.description.setText(model.getDescription());
                 newsViewHolder.author.setText(model.getAuthor());
-                newsViewHolder.date.setText(model.getDate());
+                newsViewHolder.date.setText(Utils.DateToTimeFormat(model.getDate()));
                 break;
         }
     }

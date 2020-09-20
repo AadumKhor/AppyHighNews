@@ -155,7 +155,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                     initListener();
                 } else {
                     Toast.makeText(MainActivity.this, "No Results!", Toast.LENGTH_SHORT).show();
-                    //TODO: check with error code and accordingly display messages
                 }
                 swipeRefreshLayout.setRefreshing(false);
                 topHeadlines.setVisibility(View.VISIBLE);
@@ -189,16 +188,13 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private void loadNativeAds() {
         AdLoader.Builder builder = new AdLoader.Builder(this, getString(R.string.admob_app_id));
         adLoader = builder.forUnifiedNativeAd(
-                new UnifiedNativeAd.OnUnifiedNativeAdLoadedListener() {
-                    @Override
-                    public void onUnifiedNativeAdLoaded(UnifiedNativeAd unifiedNativeAd) {
-                        // A native ad loaded successfully, check if the ad loader has finished loading
-                        // and if so, insert the ads into the list.
-                        mNativeAds.add(unifiedNativeAd);
-                        if (!adLoader.isLoading()) {
-                            insertToArticles();
+                unifiedNativeAd -> {
+                    // A native ad loaded successfully, check if the ad loader has finished loading
+                    // and if so, insert the ads into the list.
+                    mNativeAds.add(unifiedNativeAd);
+                    if (!adLoader.isLoading()) {
+                        insertToArticles();
 //                            loadMenu();
-                        }
                     }
                 }).withAdListener(
                 new AdListener() {
@@ -243,35 +239,28 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     }
 
     private void initListener() {
-        adapter.setOnItemClickListener(new NewsAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-                Intent intent = new Intent(MainActivity.this, NewsDetails.class);
+        adapter.setOnItemClickListener((view, position) -> {
+            Intent intent = new Intent(MainActivity.this, NewsDetails.class);
 
-                Article article = (Article) articles.get(position);
-                intent.putExtra("url", article.getUrl());
+            Article article = (Article) articles.get(position);
+            intent.putExtra("url", article.getUrl());
 
-                startActivity(intent);
-            }
+            startActivity(intent);
         });
 
-        adapter.setOnLongItemClick(new NewsAdapter.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view, final int position) {
-                final CharSequence[] items = {"Yes", "No"};
+        adapter.setOnLongItemClick((view, position) -> {
+            final CharSequence[] items = {"Yes", "No"};
 
-                final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setTitle("Do you want to save this article?");
-                builder.setItems(items, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int index) {
-                        if (index == 0) {
-                            try {
-                                articlesViewModel.insert((Article) articles.get(position));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                Log.e(TAG, e.toString());
-                            }
+            final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle("Do you want to save this article?");
+            builder.setItems(items, (dialog, index) -> {
+                if (index == 0) {
+                    try {
+                        articlesViewModel.insert((Article) articles.get(position));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Log.e(TAG, e.toString());
+                    }
 
 //                            AppExecutors.getInstance().diskIO().execute(new Runnable() {
 //                                @Override
@@ -282,14 +271,12 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 //                            });
 //                            Log.d(TAG, String.valueOf(articlesDatabase
 //                                    .articleDao().getSavedArticles().getValue().size()));
-                        } else {
-                            dialog.cancel();
-                        }
-                    }
-                });
-                builder.show();
-                return true;
-            }
+                } else {
+                    dialog.cancel();
+                }
+            });
+            builder.show();
+            return true;
         });
     }
 
@@ -298,12 +285,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             errorLayout.setVisibility(View.VISIBLE);
         }
 
-        retryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onRefresh();
-            }
-        });
+        retryButton.setOnClickListener(v -> onRefresh());
     }
 
     @Override
@@ -314,6 +296,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         final SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
         MenuItem searchItem = menu.findItem(R.id.action_search);
 
+        assert searchManager != null;
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         searchView.setQueryHint("Search Latest News for a keyword");
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {

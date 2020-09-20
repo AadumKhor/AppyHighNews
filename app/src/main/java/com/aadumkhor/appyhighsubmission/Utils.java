@@ -4,6 +4,9 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.telephony.TelephonyManager;
+import android.util.Log;
+
+import org.ocpsoft.prettytime.PrettyTime;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -34,6 +37,21 @@ public class Utils {
         return String.valueOf(locale.getLanguage());
     }
 
+    public static String DateToTimeFormat(String oldstringDate){
+        PrettyTime p = new PrettyTime(new Locale(getCountry()));
+        String isTime = null;
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'",
+                    Locale.ENGLISH);
+            Date date = sdf.parse(oldstringDate);
+            isTime = p.format(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return isTime;
+    }
+
     public static String DateFormat(String oldStringDate) {
         String newDate;
         SimpleDateFormat dateFormat = new SimpleDateFormat("E, d MMM yyyy", new Locale(getCountry()));
@@ -45,7 +63,7 @@ public class Utils {
             e.printStackTrace();
             newDate = oldStringDate;
         }
-
+        Log.d("hello", newDate);
         return newDate;
     }
 
